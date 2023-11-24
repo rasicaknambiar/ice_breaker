@@ -2,12 +2,12 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 
-from output_parsers import person_intel_parser
+from output_parsers import person_intel_parser, PersonIntel
 from third_parties.linkedin import scrape_linkedin_profile
 from agents.linkedin_lookup_agent import lookup as linkedin_lookup_agent
 
 
-def ice_break(name: str) -> str:
+def ice_break(name: str) -> PersonIntel:
     linkedin_profile_url = linkedin_lookup_agent(name=name)
     linkedin_data = scrape_linkedin_profile(linkedin_profile_url=linkedin_profile_url)
     summary_template = """
@@ -29,8 +29,7 @@ def ice_break(name: str) -> str:
     chain = LLMChain(llm=llm, prompt=summary_prompt_template)
 
     result = chain.run(information=linkedin_data)
-    print(result)
-    return result
+    return person_intel_parser.parse(result)
 
 
 if __name__ == "__main__":

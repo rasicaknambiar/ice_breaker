@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
@@ -7,8 +9,8 @@ from third_parties.linkedin import scrape_linkedin_profile
 from agents.linkedin_lookup_agent import lookup as linkedin_lookup_agent
 
 
-def ice_break(name: str) -> PersonIntel:
-    linkedin_profile_url = linkedin_lookup_agent(name=name)
+def ice_break(name: str) -> Tuple[PersonIntel, str]:
+    linkedin_profile_url = linkedin_lookup_agent(name="Carl Pei")
     linkedin_data = scrape_linkedin_profile(linkedin_profile_url=linkedin_profile_url)
     summary_template = """
         Given the Linkedin information {information} about a person from which I want you to create:
@@ -27,11 +29,10 @@ def ice_break(name: str) -> PersonIntel:
     )
     llm = ChatOpenAI(temperature=0, model_name="gpt-3.5-turbo")
     chain = LLMChain(llm=llm, prompt=summary_prompt_template)
-
-    result = chain.run(information=linkedin_data)
-    return person_intel_parser.parse(result)
+    result1 = chain.run(information=linkedin_data)
+    return person_intel_parser.parse(result1), linkedin_data.get("profile_pic_url")
 
 
 if __name__ == "__main__":
     print("Hello LangChain")
-    result = ice_break(name="Carl Pei")
+    ice_break(name="Carl Pei")
